@@ -27,7 +27,7 @@ def main():
     # print(search_result)
 
     if not Path(f"./dst/{keyword}.tsv").exists():
-        with open(f"./dst/{keyword}.tsv", mode="w") as f:
+        with open(f"./dst/{keyword}.tsv", mode="w", encoding="utf-8") as f:
             f.write("Title\tURL\tPoint\n")
 
     for i, result in enumerate(search_result):
@@ -74,7 +74,7 @@ def main():
 
         point = json_content["is_personal_site"]
 
-        with open(f"./dst/{keyword}.tsv", mode="a") as f:
+        with open(f"./dst/{keyword}.tsv", mode="a", encoding="utf-8") as f:
             f.write(f"{title}\t{url}\t{point}\n")
 
 
