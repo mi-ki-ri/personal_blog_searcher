@@ -69,6 +69,8 @@ def main():
             response_format={"type": "json_object"},
             timeout=30,
         )
+        if len(completion.choices) == 0:
+            continue
         print(completion.choices[0].message.content)
 
         json_content = json.loads(completion.choices[0].message.content)
