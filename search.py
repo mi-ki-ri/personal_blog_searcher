@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import time
-from googlesearch import search
+from duckduckgo_search import DDGS
 import argparse
 from openai import OpenAI
 from bs4 import BeautifulSoup
@@ -10,7 +10,7 @@ client = OpenAI()
 
 
 def main():
-    print("Google Search")
+    print("DuckDuckGo Search")
     parser = argparse.ArgumentParser()
     parser.add_argument("keyword", type=str, help="Keyword to search for")
     parser.add_argument(
@@ -21,14 +21,10 @@ def main():
     num_results = args.num_results
 
     print(f"Searching for {keyword} limit {num_results} results")
-    search_result = search(
-        keyword,
-        num_results=num_results,
-        sleep_interval=10,
-        safe=None,
-        lang="ja",
-        advanced=False,
-    )
+    ddgs = DDGS(timeout=30)
+    search_result = ddgs.text(keyword, max_results=num_results, region="jp-jp")
+
+    # print(search_result)
 
     if not Path(f"./dst/{keyword}.tsv").exists():
         with open(f"./dst/{keyword}.tsv", mode="w") as f:
@@ -38,9 +34,15 @@ def main():
         time.sleep(1)
         print(f"{i}: {result}")
 
-        soup = BeautifulSoup(result, "html.parser")
+        url = result["href"]
+        title = result["title"]
+
+        soup = BeautifulSoup(url, "html.parser")
         raw_body = soup.text
-        raw_body_slice = raw_body[:1000]
+        if len(raw_body) > 1000:
+            raw_body_slice = raw_body[:1000]
+        else:
+            raw_body_slice = raw_body
 
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -70,12 +72,6 @@ def main():
         if json_content["is_personal_site"] < 0.4:
             continue
 
-        title = soup.find("title")
-        if title is None:
-            title = ""
-        else:
-            title = title.text.strip()
-        url = result
         point = json_content["is_personal_site"]
 
         with open(f"./dst/{keyword}.tsv", mode="a") as f:
