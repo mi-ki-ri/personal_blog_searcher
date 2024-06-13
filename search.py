@@ -72,8 +72,11 @@ def main():
         if len(completion.choices) == 0:
             continue
         print(completion.choices[0].message.content)
-
-        json_content = json.loads(completion.choices[0].message.content)
+        try:
+            json_content = json.loads(completion.choices[0].message.content)
+        except:
+            print("JSONを読めませんでした。")
+            json_content["is_personal_site"] = 0
 
         if json_content["is_personal_site"] < 0.4:
             continue
