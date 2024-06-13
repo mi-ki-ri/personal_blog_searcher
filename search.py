@@ -5,6 +5,7 @@ from duckduckgo_search import DDGS
 import argparse
 from openai import OpenAI
 from bs4 import BeautifulSoup
+import requests
 
 client = OpenAI()
 
@@ -37,7 +38,8 @@ def main():
         url = result["href"]
         title = result["title"]
 
-        soup = BeautifulSoup(url, "html.parser")
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
         raw_body = soup.text
         if len(raw_body) > 1000:
             raw_body_slice = raw_body[:1000]
@@ -76,7 +78,7 @@ def main():
             json_content = json.loads(completion.choices[0].message.content)
         except:
             print("JSONを読めませんでした。")
-            json_content["is_personal_site"] = 0
+            json_content = {"is_personal_site": 0}
 
         if json_content["is_personal_site"] < 0.4:
             continue
